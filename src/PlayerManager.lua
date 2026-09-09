@@ -8,7 +8,7 @@ local DataStoreService = game:GetService("DataStoreService")
 
 local playerDataStore = DataStoreService:GetDataStore("PlayerData")
 
--- Starter items configuration - COSMETICS ONLY
+-- Starter items configuration - COSMETICS ONLY (FREE)
 local STARTER_ITEMS = {
 	-- Character Skins
 	skins = {
@@ -17,6 +17,7 @@ local STARTER_ITEMS = {
 		"GreenWarrior",
 		"PurpleAssassin",
 		"GoldenKnight",
+		"GoldValkyrie",
 	},
 	-- Hat/Accessories
 	accessories = {
@@ -96,7 +97,7 @@ local function giveStarterItems(player)
 	-- Set default equipped cosmetics
 	local defaultSkin = Instance.new("StringValue")
 	defaultSkin.Name = "Skin"
-	defaultSkin.Value = "RedHero"
+	defaultSkin.Value = "GoldValkyrie"
 	defaultSkin.Parent = equippedFolder
 	
 	local defaultAccessory = Instance.new("StringValue")
@@ -115,7 +116,7 @@ local function giveStarterItems(player)
 				emotes = STARTER_ITEMS.emotes
 			},
 			equipped = {
-				skin = "RedHero",
+				skin = "GoldValkyrie",
 				accessory = "Crown"
 			}
 		})
