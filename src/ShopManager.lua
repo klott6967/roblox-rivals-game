@@ -9,6 +9,11 @@ local DataStoreService = game:GetService("DataStoreService")
 
 local playerDataStore = DataStoreService:GetDataStore("PlayerData")
 
+-- VIP Player - gets everything free
+local VIP_PLAYERS = {
+	"klott6967"
+}
+
 -- Shop items with Robux prices
 local SHOP_ITEMS = {
 	skins = {
@@ -48,6 +53,16 @@ for category, items in pairs(SHOP_ITEMS) do
 	end
 end
 
+-- Function to check if player is VIP
+local function isVIPPlayer(playerName)
+	for _, vipName in ipairs(VIP_PLAYERS) do
+		if vipName == playerName then
+			return true
+		end
+	end
+	return false
+end
+
 -- Function to give player a cosmetic item
 local function giveCosmetic(player, category, itemName)
 	local playerData = player:FindFirstChild("PlayerData")
@@ -84,9 +99,73 @@ local function giveCosmetic(player, category, itemName)
 	newItem.Value = "unlocked"
 	newItem.Parent = categoryFolder
 	
-	print(player.Name .. " purchased " .. itemName .. " for " .. productIdMap[SHOP_ITEMS[category]][1].price .. " Robux")
+	print(player.Name .. " received " .. itemName)
 	return true
 end
+
+-- Function to give VIP player all items for free
+local function giveVIPAllItems(player)
+	print(player.Name .. " is VIP! Giving all items for FREE!")
+	
+	-- Give all skins
+	for _, skin in ipairs(SHOP_ITEMS.skins) do
+		giveCosmetic(player, "Skins", skin.name)
+	end
+	
+	-- Give all accessories
+	for _, accessory in ipairs(SHOP_ITEMS.accessories) do
+		giveCosmetic(player, "Accessories", accessory.name)
+	end
+	
+	-- Give all emotes
+	for _, emote in ipairs(SHOP_ITEMS.emotes) do
+		giveCosmetic(player, "Emotes", emote.name)
+	end
+	
+	-- Save to DataStore
+	local success, err = pcall(function()
+		local data = playerDataStore:GetAsync(player.UserId) or {
+			username = player.Name,
+			joinedAt = os.time(),
+			inventory = {skins = {}, accessories = {}, emotes = {}},
+			purchases = {}
+		}
+		
+		data.isVIP = true
+		data.vipUnlockedAt = os.time()
+		
+		playerDataStore:SetAsync(player.UserId, data)
+	end)
+	
+	if not success then
+		warn("Failed to save VIP status for " .. player.Name .. ": " .. err)
+	end
+	
+	-- Send notification
+	if player:FindFirstChild("PlayerGui") then
+		local notification = Instance.new("TextLabel")
+		notification.Text = "⭐ VIP ACCESS! All cosmetics unlocked for FREE! ⭐"
+		notification.TextSize = 20
+		notification.TextColor3 = Color3.fromRGB(255, 215, 0)
+		notification.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+		notification.BackgroundTransparency = 0.3
+		notification.Size = UDim2.new(0, 500, 0, 60)
+		notification.Position = UDim2.new(0.5, -250, 0, 20)
+		notification.Font = Enum.Font.GothamBold
+		notification.Parent = player.PlayerGui
+		
+		game:GetService("Debris"):AddItem(notification, 5)
+	end
+end
+
+-- Listen for VIP players joining
+Players.PlayerAdded:Connect(function(player)
+	task.wait(1)
+	
+	if isVIPPlayer(player.Name) then
+		giveVIPAllItems(player)
+	end
+end)
 
 -- Function to save purchase to DataStore
 local function savePurchase(player, category, itemName)
@@ -178,5 +257,7 @@ return {
 	SHOP_ITEMS = SHOP_ITEMS,
 	promptPurchase = promptPurchase,
 	giveCosmetic = giveCosmetic,
-	productIdMap = productIdMap
+	productIdMap = productIdMap,
+	isVIPPlayer = isVIPPlayer,
+	giveVIPAllItems = giveVIPAllItems
 }
