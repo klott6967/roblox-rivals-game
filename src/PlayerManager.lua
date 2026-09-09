@@ -1,6 +1,6 @@
 --[[
 PlayerManager.lua
-Handles new player detection and starter items distribution
+Handles new player detection and starter cosmetic items distribution
 ]]
 
 local Players = game:GetService("Players")
@@ -8,38 +8,39 @@ local DataStoreService = game:GetService("DataStoreService")
 
 local playerDataStore = DataStoreService:GetDataStore("PlayerData")
 
--- Starter items configuration
+-- Starter items configuration - COSMETICS ONLY
 local STARTER_ITEMS = {
-	-- Weapons
-	weapons = {
-		"Sword",
-		"Gun",
-		"Bow",
+	-- Character Skins
+	skins = {
+		"RedHero",
+		"BlueNinja",
+		"GreenWarrior",
+		"PurpleAssassin",
+		"GoldenKnight",
 	},
-	-- Tools
-	tools = {
-		"Pickaxe",
-		"Axe",
-		"Shovel",
+	-- Hat/Accessories
+	accessories = {
+		"Crown",
+		"Mask",
+		"Goggles",
+		"Headphones",
+		"Halo",
 	},
-	-- Currency
-	currency = {
-		coins = 97,
-		gems = 97,
-	},
-	-- Cosmetics
-	cosmetics = {
-		"RedSkin",
-		"BlueSkin",
-		"GreenSkin",
+	-- Emotes
+	emotes = {
+		"Dance",
+		"Wave",
+		"Victory",
+		"Sad",
+		"Happy",
 	}
 }
 
 local STARTER_QUANTITY = 97
 
--- Function to give new player starter items
+-- Function to give new player starter cosmetics
 local function giveStarterItems(player)
-	print("Giving starter items to new player: " .. player.Name)
+	print("Giving starter cosmetics to new player: " .. player.Name)
 	
 	-- Create player folder for inventory
 	local playerFolder = Instance.new("Folder")
@@ -51,53 +52,57 @@ local function giveStarterItems(player)
 	inventory.Name = "Inventory"
 	inventory.Parent = playerFolder
 	
-	-- Give weapons
-	local weaponsFolder = Instance.new("Folder")
-	weaponsFolder.Name = "Weapons"
-	weaponsFolder.Parent = inventory
+	-- Give skins
+	local skinsFolder = Instance.new("Folder")
+	skinsFolder.Name = "Skins"
+	skinsFolder.Parent = inventory
 	
-	for _, weapon in ipairs(STARTER_ITEMS.weapons) do
+	for _, skin in ipairs(STARTER_ITEMS.skins) do
 		local item = Instance.new("StringValue")
-		item.Name = weapon
-		item.Value = STARTER_QUANTITY
-		item.Parent = weaponsFolder
+		item.Name = skin
+		item.Value = "unlocked"
+		item.Parent = skinsFolder
 	end
 	
-	-- Give tools
-	local toolsFolder = Instance.new("Folder")
-	toolsFolder.Name = "Tools"
-	toolsFolder.Parent = inventory
+	-- Give accessories
+	local accessoriesFolder = Instance.new("Folder")
+	accessoriesFolder.Name = "Accessories"
+	accessoriesFolder.Parent = inventory
 	
-	for _, tool in ipairs(STARTER_ITEMS.tools) do
+	for _, accessory in ipairs(STARTER_ITEMS.accessories) do
 		local item = Instance.new("StringValue")
-		item.Name = tool
-		item.Value = STARTER_QUANTITY
-		item.Parent = toolsFolder
+		item.Name = accessory
+		item.Value = "unlocked"
+		item.Parent = accessoriesFolder
 	end
 	
-	-- Give currency
-	local currencyFolder = Instance.new("Folder")
-	currencyFolder.Name = "Currency"
-	currencyFolder.Parent = inventory
+	-- Give emotes
+	local emotesFolder = Instance.new("Folder")
+	emotesFolder.Name = "Emotes"
+	emotesFolder.Parent = inventory
 	
-	for currencyType, amount in pairs(STARTER_ITEMS.currency) do
-		local currency = Instance.new("IntValue")
-		currency.Name = currencyType
-		currency.Value = amount
-		currency.Parent = currencyFolder
-	end
-	
-	-- Give cosmetics
-	local cosmeticsFolder = Instance.new("Folder")
-	cosmeticsFolder.Name = "Cosmetics"
-	cosmeticsFolder.Parent = inventory
-	
-	for _, cosmetic in ipairs(STARTER_ITEMS.cosmetics) do
+	for _, emote in ipairs(STARTER_ITEMS.emotes) do
 		local item = Instance.new("StringValue")
-		item.Name = cosmetic
-		item.Value = STARTER_QUANTITY
-		item.Parent = cosmeticsFolder
+		item.Name = emote
+		item.Value = "unlocked"
+		item.Parent = emotesFolder
 	end
+	
+	-- Create equipped cosmetics folder
+	local equippedFolder = Instance.new("Folder")
+	equippedFolder.Name = "Equipped"
+	equippedFolder.Parent = playerFolder
+	
+	-- Set default equipped cosmetics
+	local defaultSkin = Instance.new("StringValue")
+	defaultSkin.Name = "Skin"
+	defaultSkin.Value = "RedHero"
+	defaultSkin.Parent = equippedFolder
+	
+	local defaultAccessory = Instance.new("StringValue")
+	defaultAccessory.Name = "Accessory"
+	defaultAccessory.Value = "Crown"
+	defaultAccessory.Parent = equippedFolder
 	
 	-- Save to DataStore
 	local success, err = pcall(function()
@@ -105,19 +110,21 @@ local function giveStarterItems(player)
 			username = player.Name,
 			joinedAt = os.time(),
 			inventory = {
-				weapons = STARTER_ITEMS.weapons,
-				tools = STARTER_ITEMS.tools,
-				coins = STARTER_ITEMS.currency.coins,
-				gems = STARTER_ITEMS.currency.gems,
-				cosmetics = STARTER_ITEMS.cosmetics
+				skins = STARTER_ITEMS.skins,
+				accessories = STARTER_ITEMS.accessories,
+				emotes = STARTER_ITEMS.emotes
+			},
+			equipped = {
+				skin = "RedHero",
+				accessory = "Crown"
 			}
 		})
 	end)
 	
 	if success then
-		print("Starter items saved for: " .. player.Name)
+		print("Starter cosmetics saved for: " .. player.Name)
 	else
-		warn("Failed to save starter items for " .. player.Name .. ": " .. err)
+		warn("Failed to save starter cosmetics for " .. player.Name .. ": " .. err)
 	end
 end
 
